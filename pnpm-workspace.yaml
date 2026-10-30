@@ -1,0 +1,16 @@
+# This package stays independent of the other apps in the parent folder.
+allowBuilds:
+  esbuild: true
+  fsevents: false
+  unrs-resolver: true
+
+# Retain these exact versions from the npm lockfile during migration.
+# Other new releases retain pnpm's default one-day maturity window.
+minimumReleaseAgeExclude:
+  - electron-to-chromium@1.5.468
+  - hast-util-to-jsx-runtime@2.3.7
+  - inline-style-parser@0.2.9
+  - node-releases@2.0.62
+  - style-to-object@2.0.2
+  - systeminformation@5.33.19
+  - lucide-react@1.65.0
