@@ -1,11 +1,17 @@
 import "server-only";
+import { createHash } from "node:crypto";
+import { isMockMcp } from "./integration-mode";
 import { previewState } from "./preview-session";
 import { ToolSchema, type Tool } from "@modelcontextprotocol/sdk/types.js";
 import { AjvJsonSchemaValidator } from "@modelcontextprotocol/sdk/validation/ajv-provider.js";
 import { callMcp, mcpConfig } from "./mcp";
 import { providerPayload } from "./mcp-payload";
 export function accountScope() {
-  return previewState().id;
+  return isMockMcp()
+    ? previewState().id
+    : createHash("sha256")
+        .update(process.env.ZERNIO_API_KEY?.trim() || "unconfigured")
+        .digest("hex");
 }
 const cache = new Map<string, { at: number; tools: Map<string, Tool> }>();
 function store() {

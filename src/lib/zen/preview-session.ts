@@ -1,4 +1,5 @@
 import "server-only";
+import { isMockMcp } from "./integration-mode";
 import { AsyncLocalStorage } from "node:async_hooks";
 import { createHmac, randomUUID, timingSafeEqual } from "node:crypto";
 import { demoSigningKey } from "./signing-key";
@@ -25,6 +26,7 @@ export async function withPreviewSession(
   request: Request,
   run: () => Promise<Response>,
 ) {
+  if (!isMockMcp()) return run();
   const token =
     request.headers
       .get("cookie")

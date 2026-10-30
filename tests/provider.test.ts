@@ -1,8 +1,7 @@
-import { withPreviewSession } from "../src/lib/zen/preview-session";
-process.env.DEMO_SIGNING_SECRET = "test-only-preview-signing-secret";
+process.env.ZERNIO_MCP_MOCK = "false";
 import test from "node:test";
 import assert from "node:assert/strict";
-import { runOpenRouter as actualRun } from "../src/lib/zen/openrouter";
+import { runOpenRouter } from "../src/lib/zen/openrouter";
 import type { Message, StreamEvent } from "../src/lib/zen/schema";
 
 const messages: Message[] = [
@@ -74,10 +73,7 @@ test("provider loop validates a structured tool call and streams prose", async (
               {
                 delta: {
                   tool_calls: [
-                    {
-                      index: 0,
-                      function: { arguments: ' calls","query":"voice calls"}' },
-                    },
+                    { index: 0, function: { arguments: ' calls"}' } },
                   ],
                 },
                 finish_reason: "tool_calls",
@@ -161,10 +157,3 @@ test("provider mid-stream errors are failures, not empty successes", async () =>
     else process.env.OPENROUTER_API_KEY = keyBefore;
   }
 });
-
-function runOpenRouter(...args: Parameters<typeof actualRun>) {
-  return withPreviewSession(new Request("http://localhost"), async () => {
-    await actualRun(...args);
-    return new Response();
-  });
-}

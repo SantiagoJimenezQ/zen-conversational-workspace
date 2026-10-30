@@ -1,4 +1,6 @@
 "use client";
+import { mcpCopy } from "@/lib/zen/integration-copy";
+
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -140,9 +142,11 @@ export default function ToolBrowser({
         <DialogHeader>
           <DialogTitle>Workspace tools</DialogTitle>
           <DialogDescription>
-            Live core catalog and full-catalog search. Reads return real
-            results. Other tools prepare a reviewed action; a chat message never
-            confirms it.
+            {mcpCopy(
+              "Mock catalog and tool search. Reads return sample results. Other tools prepare simulated actions.",
+              "Live core catalog and full-catalog search. Reads return real results. Other tools prepare reviewed actions.",
+            )}{" "}
+            A chat message never confirms an action.
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-5">
@@ -232,7 +236,11 @@ export default function ToolBrowser({
                     </pre>
                   </details>
                   <Button disabled={busy} onClick={() => void prepare()}>
-                    {busy && <Spinner />}Prepare / read mock tool
+                    {busy && <Spinner />}
+                    {mcpCopy(
+                      "Prepare / read mock tool",
+                      "Prepare / read real tool",
+                    )}
                   </Button>
                 </FieldGroup>
               ) : (

@@ -10,9 +10,11 @@ The product hypothesis is that this reduces navigation and documentation switchi
 
 [Try the public demo](https://zen-workspace-preview.vercel.app/) · [Security policy](SECURITY.md) · [Publication security review](SECURITY-REVIEW.md)
 
-> **Zernio MCP is mocked in this repository.** Jev and DeepSeek Flash run live through OpenRouter. Account data, documentation excerpts, phone offers, prices and actions are synthetic. The MCP adapter has no network transport or real account credential, so mock operations cannot create Zernio charges. Model requests still consume OpenRouter credits.
+> **One app, two MCP modes.** `ZERNIO_MCP_MOCK=true` is the safe default and is always enforced on the public Vercel demo. Set it to `false` locally to use your own Zernio MCP key. Jev and DeepSeek Flash use OpenRouter in either mode. Mock actions cannot create Zernio charges; real local operations can incur provider charges and still require UI review.
 
 Public source is provided for technical review. **No open-source license is granted for project code.** Third-party component and font notices remain in [public/legal](public/legal).
+
+The repository includes the original real MCP transport, local durable action ledger, model-evaluation suite and shared interface. Mocking is a server-side feature flag rather than a separate reduced application.
 
 ## What the prototype does
 
@@ -37,6 +39,8 @@ Example requests:
 - “Create a sample profile called Demo Studio.”
 - “¿Cuántas llamadas salientes hice en los últimos 30 días?”
 
+The table above describes the public mock mode. In local real mode, documentation and account reads use Zernio MCP, the tool browser discovers the provider catalog, and approved actions execute against your account. Failed real reads never fall back to samples.
+
 The surrounding dashboard navigation provides context. Zen is the implemented surface; the other dashboard sections are not full product implementations.
 
 ## Run locally
@@ -48,11 +52,12 @@ pnpm install --frozen-lockfile
 pnpm run dev
 ```
 
-Open [http://127.0.0.1:3001](http://127.0.0.1:3001). Development binds to loopback. The standalone repository has its own manifest, lockfile and configuration.
+Open [http://127.0.0.1:3001](http://127.0.0.1:3001). Development binds to loopback. The repository has its own manifest, lockfile and configuration.
 
 Without an OpenRouter key, the guided offline conversation is available. To enable live AI, create `.env.local` from [.env.example](.env.example) if you do not already have one:
 
 ```dotenv
+ZERNIO_MCP_MOCK=true
 OPENROUTER_API_KEY=
 OPENROUTER_MODEL=deepseek/deepseek-v4.1-flash-1017
 OPENROUTER_SCOPE_MODEL=typesafe/jev-1.14
@@ -62,17 +67,53 @@ PUBLIC_APP_ORIGIN=
 
 | Setting | Purpose |
 | --- | --- |
-| `OPENROUTER_API_KEY` | Server-side model authentication. The public app verifies a positive remaining lifetime cap of at most $10, no reset and BYOK usage included before each live chat. |
+| `ZERNIO_MCP_MOCK` | Defaults to `true`. Set `false` explicitly for local real MCP; Vercel always forces mock mode. |
+| `OPENROUTER_API_KEY` | Server-side model authentication. On Vercel, the app verifies a positive remaining lifetime cap of at most $10, no reset and BYOK usage included before each live chat. Local development can use your own model key. |
 | `OPENROUTER_MODEL` | Conversational model; defaults to DeepSeek v4.1 Flash. |
 | `OPENROUTER_SCOPE_MODEL` | Separate scope classifier; defaults to Jev 1.14. |
 | `DEMO_SIGNING_SECRET` | Signs simulation sessions, quotes and historical action receipts. Use a persistent random value of at least 32 characters in production. |
 | `PUBLIC_APP_ORIGIN` | Allowed production HTTPS origin. Vercel-provided deployment origins are also recognized. |
 
-A signing secret can be generated locally with `openssl rand -hex 32`. Keep credentials server-side, out of chat, screenshots and source control. Do not use `NEXT_PUBLIC_` variables for keys. **No Zernio account key is needed or supported.**
+A signing secret can be generated locally with `openssl rand -hex 32`. Keep credentials server-side, out of chat, screenshots and source control. Do not use `NEXT_PUBLIC_` variables for keys. **No Zernio account key is needed for mock mode.**
+
+## Connect your own Zernio account locally
+
+Anyone can clone this project and enable the original real MCP integration:
+
+```sh
+git clone https://github.com/SantiagoJimenezQ/zen-conversational-workspace.git
+cd zen-conversational-workspace
+pnpm install --frozen-lockfile
+```
+
+Create `.env.local` from `.env.example` if it does not already exist. Keep the file private and set your own credentials there:
+
+```dotenv
+ZERNIO_MCP_MOCK=false
+ZERNIO_DOCS_MCP_ENABLED=true
+ZERNIO_ACCOUNT_MCP_ENABLED=true
+ZERNIO_API_KEY=
+OPENROUTER_API_KEY=
+OPENROUTER_MODEL=deepseek/deepseek-v4.1-flash-1017
+OPENROUTER_SCOPE_MODEL=typesafe/jev-1.14
+DEMO_SIGNING_SECRET=
+```
+
+Run `pnpm run dev` and open [127.0.0.1:3001](http://127.0.0.1:3001). The top banner and action cards identify real-account mode. Restart development after changing the feature flag; rebuild before `pnpm start` when switching a production build. A mismatched build/display mode fails rather than presenting real actions as simulated.
+
+The real adapter uses the official MCP SDK with fixed documentation and account endpoints, rejected redirects, cancellation, a 12-second deadline and a 512 KiB response limit. The account key is sent only to the account endpoint. It stays on the server and is redacted from displayed results.
+
+Real mode uses the original private file ledger at `.zen-state/`, or `ZEN_STATE_DIR`, with file locking and atomic reservation. Keep it out of Git. Its cumulative $5 approval policy is a local action constraint, not a provider billing cap or subscription cancellation. Recurring actions require separate consent; unknown paid costs remain blocked. Provider billing and account permissions still apply.
+
+When using AI in real mode, selected account data and resource IDs are sent to OpenRouter and the selected model provider; the account credential itself stays on the server.
+
+Start with read-only requests such as “Show my workspace profiles.” Real writes need a separate explicit UI confirmation; a chat “yes” cannot execute them. The server accepts real mode only through its loopback/same-origin boundary. Do not expose it through a public tunnel or deploy it with account credentials; the project does not provide multi-user account authorization.
+
+The public Vercel deployment always uses mocks, even if someone sets the flag to `false` or mistakenly supplies a key. Missing local real-account configuration returns an error instead of switching to samples.
 
 ## Architecture
 
-The app uses Next.js 16 App Router, React 19, TypeScript, Tailwind CSS 4 and shadcn/Radix. Geist is bundled locally. MCP tool schemas use the MCP SDK types and JSON Schema validator; this public adapter does not open an MCP connection. The required MIT-licensed shadcn stylesheet is included locally so clean builds do not depend on the CLI package.
+The app uses Next.js 16 App Router, React 19, TypeScript, Tailwind CSS 4 and shadcn/Radix. Geist is bundled locally. MCP tool schemas use the MCP SDK types and JSON Schema validator; the feature flag selects either the mock adapter or the original real MCP transport. The required MIT-licensed shadcn stylesheet is included locally so clean builds do not depend on the CLI package.
 
 ### Conversation and reads
 
@@ -83,7 +124,7 @@ flowchart LR
     UI[Chat UI] --> API[Next.js API]
     API --> Scope[Jev scope check]
     Scope -->|Allowed| Agent[DeepSeek agent]
-    Agent -->|Server-validated tools| Mock[Mock MCP adapter]
+    Agent -->|Server-validated tools| Mock[Selected MCP adapter]
     Scope -->|Refuse or clarify| UI
 ```
 
@@ -118,11 +159,11 @@ The UI sends mock operations through the chat function so model proposals and co
 
 A signed HttpOnly cookie selects visitor state through [`preview-session.ts`](src/lib/zen/preview-session.ts). Proposal ownership includes both session and conversation. Supplying another conversation ID does not grant access to another visitor’s state.
 
-**State is instance-local and temporary.** A cold start, another server instance or capacity eviction can remove a proposal or reset sample resources. Prepare an unavailable proposal again. This is not a shared durable database or production transaction system.
+**Mock state is instance-local and temporary.** A cold start, another server instance or capacity eviction can remove a proposal or reset sample resources. Prepare an unavailable proposal again. This is not a shared durable database or production transaction system.
 
-## Mock MCP integration
+## MCP integration
 
-[`mcp.ts`](src/lib/zen/mcp.ts) implements an explicit synthetic catalog:
+[`mcp.ts`](src/lib/zen/mcp.ts) selects the adapter through the server-owned [feature flag](src/lib/zen/integration-mode.ts). [`mcp-live.ts`](src/lib/zen/mcp-live.ts) contains the original SDK transport; [`mcp-mock.ts`](src/lib/zen/mcp-mock.ts) contains this explicit synthetic catalog:
 
 - `profiles_list`
 - `accounts_list`
@@ -132,7 +173,7 @@ A signed HttpOnly cookie selects visitor state through [`preview-session.ts`](sr
 - `phone_numbers_purchase_phone_number`
 - `calls_list_calls`
 
-It also supplies mock documentation search/page responses. There is no network transport, fallback to a live account or account credential in the adapter. Unsupported operations return an error instead of inventing a successful result.
+It also supplies mock documentation search/page responses. The mock adapter has no network transport or account credential and never delegates to the live adapter. The real adapter never falls back to mock data. Unsupported operations return an error instead of inventing a successful result.
 
 [`mcp-catalog.ts`](src/lib/zen/mcp-catalog.ts) validates names and arguments against the offered JSON Schemas. A fixed set of reviewed reads can execute immediately. Other supported operations produce a review card or are blocked by policy. The model cannot choose another server or use a generic nested dispatcher to bypass validation.
 
@@ -147,7 +188,7 @@ Yesterday is the complete previous calendar day in `Europe/Madrid`. Last-7-day a
 ## Actions and approvals
 
 1. Resolve the offered tool and validate its arguments.
-2. Check policy and calculate a supported sample estimate.
+2. Check policy and calculate the supported estimate for the active adapter.
 3. Store the exact proposal for this visitor and conversation.
 4. Show the review card, including simulated recurring terms.
 5. Recheck ownership, schema, expiry and sample price on UI confirmation.
@@ -182,7 +223,7 @@ These controls do not provide authenticated workspace membership or distributed 
 | --- | --- |
 | Conversations and displayed snapshots | Latest 20 conversations in browser-local storage; no cloud sync. |
 | Proposals, operations and modified sample resources | Visitor-specific memory in a server instance, expiring after an hour of inactivity and subject to bounded eviction or resets. |
-| Model input | Chat text and selected synthetic tool results go to OpenRouter and the chosen model provider. |
+| Model input | Chat text and selected tool results—synthetic in mock mode, actual account data in local real mode—go to OpenRouter and the chosen model provider. |
 | Credentials | Server environment only; excluded from Git and client bundles. |
 
 Snapshots keep their retrieval timestamps. Refresh explicitly to read current simulation state. The operation list records this simulation’s approvals; it is not a global provider audit log. Do not enter personal or confidential information into the public demo.
@@ -201,7 +242,7 @@ pnpm run build
 pnpm audit --audit-level=low
 ```
 
-The [38 network-free tests](tests/) cover transport limits, signed context, scope handling, Jev response validation, stream failures, persistence, call windows/DST, argument validation, explicit consent, budget policy, session isolation and request origins.
+The [network-free tests](tests/) cover transport limits, signed context, scope handling, Jev response validation, stream failures, persistence, call windows/DST, argument validation, explicit consent, budget policy, session isolation and request origins.
 
 [`mock-mcp.test.ts`](tests/mock-mcp.test.ts) replaces network access with a hard failure while it prepares, confirms and reads a simulated profile. It also checks forged sessions, cross-conversation access, invalid origins and capacity behavior. Model tests use synthetic responses; they do not consume OpenRouter credits or establish model quality.
 
@@ -213,11 +254,24 @@ The original local prototype also has a separate **30-case live-model evaluation
 
 That runner isolates each case, replaces the account credential, restricts network destinations and records model IDs, dataset version, latency, tool calls and failed checks. Scoring checks cards and operation states in code; prose checks are heuristics rather than a complete semantic judge or STE validator.
 
-**That runner and its reports are not included in this standalone public snapshot.** There are no `eval:scope` or `eval:agent` commands in this package. The original suite’s scores must not be presented as a baseline for this public adapter. The current original dataset is `zen-agent-v1.3`; two targeted Spanish cases passed, while a full v1.3 baseline remains pending. Earlier runs exposed false scope clarifications and action requests that returned prose without the expected review card.
+The [dataset and scorers](evals/) and [live-model runner](scripts/eval-agent.ts) are included. Run explicitly from this repository:
 
-Porting that suite to this visitor-scoped mock implementation and recording a repeatable baseline is a next step. The public demo’s live-chat smoke check is evidence of one working interaction, not a model evaluation result.
+```sh
+pnpm run eval:scope
+pnpm run eval:agent
+pnpm run eval:agent --case=calls-30-outbound
+```
+
+These commands consume OpenRouter credits and do not run in normal CI. The agent runner selects the original transport but replaces the account credential and intercepts every MCP request with synthetic HTTP responses before invoking the agent. It uses temporary ledgers and allows network access only to the fixed model endpoints. It never uses your real account key or executes a real provider action. Reports are written to ignored `artifacts/evals/` directories. See [the eval guide](evals/README.md).
+
+Earlier scores must not be presented as a new baseline for this unified implementation. The current original dataset is `zen-agent-v1.3`; two targeted Spanish cases passed, while a full v1.3 baseline remains pending. Earlier runs exposed false scope clarifications and action requests that returned prose without the expected review card.
+
+Recording a full baseline for this unified implementation and comparing repeated runs is a next step. The public demo’s live-chat smoke check is evidence of one working interaction, not a model evaluation result.
 
 ### Verification snapshot
+
+The unified implementation passes 72 network-free tests, including the original real-transport/durable-ledger coverage and new feature-flag isolation checks. Transport tests mock HTTP; they do not charge or mutate a real account. Live-model evals were not rerun as part of the feature-flag change.
+
 
 On **30 October 2026**, all 38 tests, lint, TypeScript, build, secret scan and dependency audit passed in [clean GitHub CI](https://github.com/SantiagoJimenezQ/zen-conversational-workspace/actions/runs/41115968270).
 
@@ -234,23 +288,24 @@ Production checks exercised live AI with a 30-day sample call card, the seven-to
 | [src/hooks/](src/hooks/) | Conversation state, buffered text and browser persistence. |
 | [agent-policy.ts](src/lib/zen/agent-policy.ts) | Separate scope classifier and runtime language/domain policy. |
 | [openrouter.ts](src/lib/zen/openrouter.ts) | Bounded conversational model/tool loop. |
-| [mcp.ts](src/lib/zen/mcp.ts) | Mock-only tool catalog and synthetic responses. |
+| [mcp.ts](src/lib/zen/mcp.ts), [mcp-live.ts](src/lib/zen/mcp-live.ts), [mcp-mock.ts](src/lib/zen/mcp-mock.ts) | Feature-flag dispatch, original real transport and synthetic adapter. |
 | [mcp-catalog.ts](src/lib/zen/mcp-catalog.ts) | Exact tool resolution and schema validation. |
 | [operations.ts](src/lib/zen/operations.ts) | Sample quotes, approval rules and operation state. |
 | [preview-session.ts](src/lib/zen/preview-session.ts), [operation-store.ts](src/lib/zen/operation-store.ts) | Signed visitor scope and serialized instance-local state changes. |
 | [telephony.ts](src/lib/zen/telephony.ts), [call-window.ts](src/lib/zen/call-window.ts) | Sample phone offers, exact time windows and call counts. |
-| [tests/](tests/) | Deterministic regression coverage. |
+| [evals/](evals/), [scripts/](scripts/) | Versioned datasets, scoring and opt-in live-model runners. |
+| [tests/](tests/) | Deterministic regression coverage for both modes. |
 
 ## Working with coding agents
 
-[AGENTS.md](AGENTS.md) describes contributor workflow, validation commands and mock-only invariants. It is not loaded into the conversational model. Runtime instructions live in [agent-policy.ts](src/lib/zen/agent-policy.ts); server code enforces tool and approval boundaries.
+[AGENTS.md](AGENTS.md) describes contributor workflow, validation commands and mode-isolation invariants. It is not loaded into the conversational model. Runtime instructions live in [agent-policy.ts](src/lib/zen/agent-policy.ts); server code enforces tool and approval boundaries.
 
-Environment files, Vercel project metadata, generated output, local state and screenshots are excluded from the repository. Keep the mock adapter free of account credentials and network transport when syncing changes from another implementation.
+Environment files, Vercel project metadata, generated output, local state and screenshots are excluded from the repository. Keep mock and real modes behind the shared server-owned feature flag. The mock adapter must stay free of account credentials and network transport.
 
 ## What comes next
 
-- **Make it more reliable:** improve scope decisions and action-card preparation; port live-model evals and measure repeated runs.
+- **Make it more reliable:** improve scope decisions and action-card preparation; run the included live-model evals and measure repeated runs.
 - **Make it ready for teams:** add authenticated workspace membership, per-user authorization, shared durable operation storage and distributed request controls before connecting real accounts.
 - **Learn from users:** observe first-time users completing a few real tasks, then use that evidence to improve the experience.
 
-A real account integration would also require provider-specific pricing, billing reconciliation, webhook-driven resource status and retention controls. Those capabilities are outside this mock-only public repository.
+A real account integration would also require provider-specific pricing, billing reconciliation, webhook-driven resource status and retention controls. The real transport is included for local use; those production authorization and operational capabilities remain future work.

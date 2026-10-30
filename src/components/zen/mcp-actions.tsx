@@ -1,4 +1,6 @@
 "use client";
+import { mcpCopy } from "@/lib/zen/integration-copy";
+
 import { useState } from "react";
 import { RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -84,7 +86,7 @@ export function McpArtifactView({
   ) : null;
   const footer = (
     <p className="live-evidence-time">
-      Mock MCP ·{" "}
+      {mcpCopy("Mock MCP", "Zernio MCP")} ·{" "}
       {new Date(fetched).toLocaleString("en-GB", {
         dateStyle: "medium",
         timeStyle: "short",
@@ -98,7 +100,8 @@ export function McpArtifactView({
           <CardHeader>
             <CardTitle>{artifact.title}</CardTitle>
             <CardDescription>
-              Sample account action · {artifact.tool}
+              {mcpCopy("Sample account action", "Real account action")} ·{" "}
+              {artifact.tool}
             </CardDescription>
             <CardAction>
               <Badge
@@ -122,8 +125,12 @@ export function McpArtifactView({
             </p>
             {artifact.recurringCents > 0 && (
               <p className="mt-2 text-sm">
-                Recurring: {money(artifact.recurringCents)}/month until released
-                in the simulation. No real subscription or charge is created.
+                {mcpCopy("Simulated recurring price: ", "Recurring charge: ")}
+                {money(artifact.recurringCents)}/month.{" "}
+                {mcpCopy(
+                  "No real subscription or charge is created.",
+                  "Continues until released in Zernio; the local approval budget does not cancel subscriptions.",
+                )}
               </p>
             )}
             {artifact.reason && (
@@ -148,7 +155,7 @@ export function McpArtifactView({
                     setRecurring(false);
                   }}
                 >
-                  Review simulated action
+                  {mcpCopy("Review simulated action", "Review real action")}
                 </Button>
                 <Button
                   variant="ghost"
@@ -188,8 +195,10 @@ export function McpArtifactView({
             <DialogHeader>
               <DialogTitle>{artifact.title}</DialogTitle>
               <DialogDescription>
-                This changes the sample account only. No external action or
-                charge occurs.
+                {mcpCopy(
+                  "This changes the sample account only. No external action or charge occurs.",
+                  "This executes the exact operation below on your real Zernio account. Charges or recurring terms shown below may apply.",
+                )}
               </DialogDescription>
             </DialogHeader>
             <pre className="mcp-json">{artifact.argsJson}</pre>
@@ -212,8 +221,10 @@ export function McpArtifactView({
                     release this number
                   </FieldLabel>
                   <FieldDescription>
-                    Simulated renewal illustrates a subscription, not a one-time
-                    demo fee.
+                    {mcpCopy(
+                      "Simulated renewal illustrates a subscription; no charge occurs.",
+                      "Future renewal is a real provider subscription, not a one-time demo fee.",
+                    )}
                   </FieldDescription>
                 </div>
               </Field>
@@ -244,7 +255,8 @@ export function McpArtifactView({
                   })
                 }
               >
-                {busy && <Spinner />}Run simulated action
+                {busy && <Spinner />}
+                {mcpCopy("Run simulated action", "Run real action")}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -256,7 +268,9 @@ export function McpArtifactView({
       <Card className="artifact-card">
         <CardHeader>
           <CardTitle>{artifact.title}</CardTitle>
-          <CardDescription>Sample result · {artifact.tool}</CardDescription>
+          <CardDescription>
+            {mcpCopy("Sample result", "Live result")} · {artifact.tool}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <pre className="mcp-json">{artifact.output}</pre>
@@ -312,7 +326,9 @@ export function McpArtifactView({
             · {artifact.timeZone}
           </CardDescription>
           <CardAction>
-            <Badge variant="outline">Sample account</Badge>
+            <Badge variant="outline">
+              {mcpCopy("Sample account", "Live account")}
+            </Badge>
           </CardAction>
         </CardHeader>
         <CardContent>
@@ -350,7 +366,8 @@ export function McpArtifactView({
               })
             }
           >
-            {busy ? <Spinner /> : <RefreshCw />}Refresh sample calls
+            {busy ? <Spinner /> : <RefreshCw />}
+            {mcpCopy("Refresh sample calls", "Refresh real calls")}
           </Button>
           {footer}
         </CardFooter>
@@ -365,7 +382,9 @@ export function McpArtifactView({
           /month
         </CardDescription>
         <CardAction>
-          <Badge variant="outline">Mock provider</Badge>
+          <Badge variant="outline">
+            {mcpCopy("Mock provider", "Real provider")}
+          </Badge>
         </CardAction>
       </CardHeader>
       <CardContent>
@@ -402,7 +421,8 @@ export function McpArtifactView({
               })
             }
           >
-            {busy ? <Spinner /> : <RefreshCw />}Check sample stock
+            {busy ? <Spinner /> : <RefreshCw />}
+            {mcpCopy("Check sample stock", "Check live stock")}
           </Button>
         </div>
         {feedback}
@@ -440,7 +460,7 @@ export function McpArtifactView({
               })
             }
           >
-            Review simulated purchase
+            {mcpCopy("Review simulated purchase", "Review real purchase")}
           </Button>
         )}
         {footer}

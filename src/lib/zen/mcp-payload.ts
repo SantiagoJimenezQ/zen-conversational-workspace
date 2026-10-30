@@ -83,6 +83,7 @@ export function safeOutput(value: unknown, depth = 0): unknown {
   if (typeof value === "string") {
     let clean = value;
     for (const key of [
+      process.env.ZERNIO_API_KEY,
       process.env.OPENROUTER_API_KEY,
       process.env.PUBLIC_DEMO_OPENROUTER_API_KEY,
     ])

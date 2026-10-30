@@ -1,4 +1,5 @@
 "use client";
+import { mcpCopy } from "@/lib/zen/integration-copy";
 
 import { useState } from "react";
 import { ArrowUp, Square } from "lucide-react";
@@ -66,7 +67,7 @@ export function Composer({
           <InputGroupText>
             {mode === "live"
               ? accountReads
-                ? "Live AI · Mock MCP"
+                ? mcpCopy("Live AI · Mock MCP", "Live AI · Zernio MCP")
                 : "Live conversation · Sample account"
               : "Demo conversation"}
           </InputGroupText>

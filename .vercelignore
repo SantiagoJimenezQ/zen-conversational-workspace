@@ -6,3 +6,13 @@ node_modules
 tests
 
 artifacts
+
+# Local real-account state and private key files
+.zen-state
+*.pem
+*.key
+*.zip
+
+# Local-only model evaluation source (imports test fixtures)
+evals
+scripts

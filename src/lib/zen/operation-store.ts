@@ -1,4 +1,6 @@
 import "server-only";
+import { isMockMcp } from "./integration-mode";
+import { ledgerTransaction as liveTransaction } from "./operation-store-live";
 import { previewState } from "./preview-session";
 export type Operation = {
   id: string;
@@ -37,6 +39,7 @@ export function committedCents(ledger: Ledger) {
 export async function ledgerTransaction<T>(
   change: (ledger: Ledger) => T | Promise<T>,
 ): Promise<T> {
+  if (!isMockMcp()) return liveTransaction(change);
   const state = previewState();
   const previous = state.queue;
   let release!: () => void;

@@ -38,7 +38,7 @@ export async function priceOperation(
       cents: null,
       recurring: 0,
       reason:
-        "This credential, access-management or financial operation needs its dedicated Workspace interface; it is outside the $5 demo action policy.",
+        "This credential, access-management or financial operation needs its dedicated Zernio interface; it is outside the $5 demo action policy.",
     };
   if (tool.name === "phone_numbers_purchase_phone_number") {
     if (args.connect_whatsapp !== false || args.wants_whatsapp === true)
@@ -348,7 +348,7 @@ export async function realToolRead(
   const result = await invokeCatalogTool(name, args, signal);
   if (result.isError)
     throw new Error(
-      "Workspace could not complete this read. Check account permissions and prerequisites.",
+      "Zernio could not complete this read. Check account permissions and prerequisites.",
     );
   return {
     kind: "mcp-result",

@@ -47,7 +47,7 @@ async function handle(request: Request) {
     if (admitted instanceof Response) return admitted;
     release = admitted.release;
     try {
-      await assertPreviewBudget(request.signal);
+      if (process.env.VERCEL === "1") await assertPreviewBudget(request.signal);
     } catch {
       release();
       return Response.json(

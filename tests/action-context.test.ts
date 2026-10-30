@@ -1,4 +1,4 @@
-process.env.DEMO_SIGNING_SECRET = "test-only-preview-signing-secret";
+process.env.ZERNIO_MCP_MOCK = "false";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";

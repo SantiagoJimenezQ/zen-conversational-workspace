@@ -25,3 +25,7 @@ The candidate excludes the original local account app, credentials, recordings a
 Anyone with public access may consume the dedicated OpenRouter budget. The provider key cap is the financial boundary; per-instance fairness and origin checks are not distributed abuse protection or authentication. Synthetic state may be evicted or reset between serverless instances. Scope classification can make mistakes. No real account should be connected, and visitors should not submit sensitive data.
 
 No open-source license is granted for project code. Third-party notices remain in public/legal. See SECURITY.md for private reporting and deployment requirements.
+
+## Unified source extension
+
+The repository now includes the original fixed-endpoint real MCP transport, durable local ledger, regression tests and model-evaluation source. ZERNIO_MCP_MOCK defaults to true; Vercel always mocks. Explicit local real mode requires the user's own account key and loopback requests. Mock mode cannot switch based on key presence or fall back to live transport. Display/build mismatch is rejected. Real-mode transport tests mock all HTTP, and evals replace account credentials before importing the agent. The feature-flag change passes 72 tests; no real-account call or paid model eval was used for validation.

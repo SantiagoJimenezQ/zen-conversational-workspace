@@ -48,7 +48,7 @@ export function demoResponse(
     /buy|purchase|send|delete|publish|place a call|call them now/i.test(user)
   ) {
     text =
-      "The offline demo cannot change your Workspace account. It can simulate number setup. Review the details before you confirm a simulation. Use live mode for sample account actions.";
+      "The offline demo cannot change your Zernio account. It can simulate number setup. Review the details before you confirm a simulation. Use live mode for real account actions.";
   } else if (
     /number|poland|polish|just voice|voice only|both|sms too/i.test(user)
   ) {
@@ -57,7 +57,7 @@ export function demoResponse(
       (/number/i.test(user) && !/poland|polish|\bpl\b/i.test(user))
     )
       text =
-        "Which country do you need a number from? The offline demo covers Poland. Use the official Workspace catalog to check other countries.";
+        "Which country do you need a number from? The offline demo covers Poland. Use the official Zernio catalog to check other countries.";
     else if (!/voice|outbound call|sms|both/i.test(user))
       text = "Do you need SMS, voice calls, or both?";
     else {
@@ -77,11 +77,11 @@ export function demoResponse(
     name = "discover_capabilities";
     args = { useCase: user };
     text = /alert|call/i.test(user)
-      ? "Workspace’s voice API supports calls from events in your app. First, select a caller number. Then, connect your event handler to the API. Which country do you need a number from?"
-      : "Workspace connects supported platforms through one API. This card contains information from the official documentation. What do you want to do in Workspace?";
+      ? "Zernio’s voice API supports calls from events in your app. First, select a caller number. Then, connect your event handler to the API. Which country do you need a number from?"
+      : "Zernio connects supported platforms through one API. This card contains information from the official documentation. What do you want to do in Zernio?";
   } else
     text =
-      "I can only help with Workspace. The offline demo covers its capabilities, Polish number setup, and yesterday’s sample calls. Use live mode for other Workspace requests.";
+      "I can only help with Zernio. The offline demo covers its capabilities, Polish number setup, and yesterday’s sample calls. Use live mode for other Zernio requests.";
   const result = name ? executeTool(name, args, now) : undefined;
   return [
     { type: "text", text },

@@ -1,4 +1,4 @@
-process.env.DEMO_SIGNING_SECRET = "test-only-preview-signing-secret";
+process.env.ZERNIO_MCP_MOCK = "false";
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
@@ -8,9 +8,7 @@ import {
 } from "../src/lib/zen/agent-policy";
 
 const config = { key: "test-key", model: "typesafe/jev-1.14" };
-const messages = [
-  { role: "user" as const, text: "List my Workspace profiles." },
-];
+const messages = [{ role: "user" as const, text: "List my Zernio profiles." }];
 function answer(
   choice = "in_scope",
   probabilities = { in_scope: 0.98, out_of_scope: 0.01, clarify: 0.01 },
@@ -40,7 +38,7 @@ test("Jev uses the fixed Decisions endpoint, typed criteria and minimal context 
     assert.deepEqual(body.state, {
       currentRequest: messages[0].text,
       priorRequests: [],
-      hasVerifiedWorkspaceAction: true,
+      hasVerifiedZernioAction: true,
     });
     for (const key of [
       "tools",

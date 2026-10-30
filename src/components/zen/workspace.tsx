@@ -1,4 +1,5 @@
 "use client";
+import { mcpCopy } from "@/lib/zen/integration-copy";
 
 import dynamic from "next/dynamic";
 import { useState } from "react";
@@ -125,7 +126,7 @@ export function Workspace({
             ? "How many sample calls did my account make yesterday?"
             : "Show yesterday’s sample calls. These are demo records, not my sample account activity.",
           detail: accountReads
-            ? "Sample account history"
+            ? mcpCopy("Sample account history", "Real account history")
             : "Explore sample account data",
         }
       : suggestion,
@@ -134,7 +135,7 @@ export function Workspace({
     prompts.unshift({
       icon: MessageCircle,
       label: "Show my connected accounts",
-      detail: "Sample read via Mock MCP",
+      detail: mcpCopy("Sample read via Mock MCP", "Live read via Zernio MCP"),
       prompt: "Which accounts are connected to my Workspace account?",
     });
   const navigation = (
@@ -200,7 +201,10 @@ export function Workspace({
               <TooltipContent>
                 {ws.mode === "live"
                   ? accountReads
-                    ? "Live AI · Mock MCP · Simulated actions"
+                    ? mcpCopy(
+                        "Live AI · Mock MCP · Simulated actions",
+                        "Live AI · Real MCP tools · Reviewed actions",
+                      )
                     : "Live AI · account not connected"
                   : "Offline demo · simulated account"}
               </TooltipContent>
@@ -326,7 +330,10 @@ export function Workspace({
                 <p className="welcome-footer">
                   Unofficial concept ·{" "}
                   {accountReads
-                    ? "Sample account tools · $5 action budget"
+                    ? mcpCopy(
+                        "Sample account tools · $5 action budget",
+                        "Real account tools · $5 action budget",
+                      )
                     : "Sample account"}
                 </p>
               </div>
@@ -468,9 +475,13 @@ export function Workspace({
           <DialogHeader>
             <DialogTitle>Conversation settings</DialogTitle>
             <DialogDescription>
-              Zen is an unofficial concept. Live mode uses sample account tools,
-              inventory and call history. Other actions require UI review and
-              are bounded by the $5 Zen action budget.
+              Zen is an unofficial concept.{" "}
+              {mcpCopy(
+                "Live AI uses mocked account tools, inventory and call history.",
+                "Live mode uses configured Zernio documentation and real account tools.",
+              )}{" "}
+              Other actions require UI review and are bounded by the $5 Zen
+              action budget.
             </DialogDescription>
           </DialogHeader>
           <FieldGroup>
@@ -511,16 +522,19 @@ export function Workspace({
               </FieldDescription>
             </Field>
             <Field>
-              <FieldLabel>Mock MCP</FieldLabel>
+              <FieldLabel>{mcpCopy("Mock MCP", "Zernio MCP")}</FieldLabel>
               <FieldDescription>
                 {integration.docs
                   ? "Public documentation reads enabled."
                   : "Public documentation reads disabled."}{" "}
                 {integration.account
-                  ? "Sample account tools configured."
+                  ? mcpCopy(
+                      "Sample account tools configured.",
+                      "Local real-account tools configured.",
+                    )
                   : "Account reads are not configured."}{" "}
-                Successful reads show a sample result and retrieval time in the
-                conversation.
+                Successful reads show a {mcpCopy("sample", "live")} result and
+                retrieval time in the conversation.
               </FieldDescription>
             </Field>
           </FieldGroup>
@@ -528,12 +542,18 @@ export function Workspace({
             <Info />
             <AlertDescription>
               {integration.account
-                ? "Sample account access is enabled in live mode. "
+                ? mcpCopy(
+                    "Sample account access is enabled in live mode. ",
+                    "Real account access is enabled in live mode. ",
+                  )
                 : "No live account reads are configured. "}
-              Catalog reads are simulated. Other actions require explicit UI
-              review; unverified costs cannot bypass the $5 budget.
-              Conversations, including displayed account snapshots, are stored
-              in this browser.
+              {mcpCopy(
+                "Catalog reads are simulated.",
+                "Catalog reads use your real account.",
+              )}{" "}
+              Other actions require explicit UI review; unverified costs cannot
+              bypass the $5 budget. Conversations, including displayed account
+              snapshots, are stored in this browser.
             </AlertDescription>
           </Alert>
           <DialogFooter>

@@ -1,4 +1,6 @@
 "use client";
+import { mcpCopy } from "@/lib/zen/integration-copy";
+
 import { ChevronDown, ExternalLink } from "lucide-react";
 import {
   Collapsible,
@@ -26,7 +28,12 @@ export function DocumentationEvidence({
 }) {
   return (
     <div className="live-evidence">
-      <p className="live-evidence-label">Sample documentation · Mock MCP</p>
+      <p className="live-evidence-label">
+        {mcpCopy(
+          "Sample documentation · Mock MCP",
+          "Live documentation · Zernio MCP",
+        )}
+      </p>
       <Collapsible className="source-disclosure">
         <CollapsibleTrigger>
           <ChevronDown />
@@ -69,7 +76,9 @@ export function AccountReadCard({ snapshot }: { snapshot: AccountRead }) {
         <CardTitle>
           {accounts ? "Connected accounts" : "Workspace profiles"}
         </CardTitle>
-        <CardDescription>Sample read from Mock MCP</CardDescription>
+        <CardDescription>
+          {mcpCopy("Sample read from Mock MCP", "Live read from Zernio MCP")}
+        </CardDescription>
         <CardAction>
           <Badge variant="outline">Read-only</Badge>
         </CardAction>

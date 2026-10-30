@@ -15,7 +15,7 @@ async function read(
   const r = await invokeCatalogTool(name, args, signal);
   if (r.isError)
     throw new Error(
-      "Workspace could not complete the telephony read. Check billing, permissions and prerequisites.",
+      "Zernio could not complete the telephony read. Check billing, permissions and prerequisites.",
     );
   return providerPayload(r);
 }
@@ -147,7 +147,7 @@ export async function liveCallInsights(
       signal,
     );
     if (!record(payload) || !Array.isArray(payload.calls))
-      throw new Error("The sample call history could not be interpreted.");
+      throw new Error("The real call history could not be interpreted.");
     let older = false;
     for (const call of payload.calls) {
       if (

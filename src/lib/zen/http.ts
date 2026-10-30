@@ -1,3 +1,4 @@
+import { isMockMcp } from "./integration-mode";
 // Explicit production origins and same-origin browser POSTs; no wildcard CORS.
 export function requestGuard(request: Request): Response | null {
   const origin = request.headers.get("origin");
@@ -16,9 +17,12 @@ export function requestGuard(request: Request): Response | null {
     const local = ["127.0.0.1", "localhost", "[::1]"].includes(
       new URL(`http://${host}`).hostname,
     );
-    accepted = deployed
-      ? Boolean(origin && allowed.has(origin) && new URL(origin).host === host)
-      : local && (!origin || new URL(origin).host === host);
+    accepted =
+      deployed && isMockMcp()
+        ? Boolean(
+            origin && allowed.has(origin) && new URL(origin).host === host,
+          )
+        : local && (!origin || new URL(origin).host === host);
   } catch {
     accepted = false;
   }

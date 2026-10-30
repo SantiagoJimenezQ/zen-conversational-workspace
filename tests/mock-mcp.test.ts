@@ -1,3 +1,4 @@
+process.env.ZERNIO_MCP_MOCK = "true";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
