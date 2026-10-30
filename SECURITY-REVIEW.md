@@ -5,7 +5,7 @@ Reviewed 30 October 2026. Scope: the standalone public preview and its initial p
 ## Findings addressed
 
 - Excluded environment files, Vercel metadata, generated builds, screenshots, local ledgers and archives from publication.
-- Removed the development-only shadcn CLI dependency, which pulled in deepmerge with low-severity advisory GHSA-gcqx-w48m-w2h4. Generated UI components remain. The full dependency audit subsequently reported zero known vulnerabilities.
+- Removed the development-only shadcn CLI dependency, which pulled in deepmerge with low-severity advisory GHSA-gcqx-w48m-w2h4. Generated UI components remain; the required MIT-licensed stylesheet is included locally. Clean CI exposed the former parent-workspace stylesheet resolution, which was corrected before the final checks. The full dependency audit subsequently reported zero known vulnerabilities.
 - Rejected invalid origins before mock-session allocation; regression tests verify rejected requests receive no session cookie.
 - Replaced full-session global refusal with bounded eviction of old synthetic state. Limited sessions to 100 per instance and mock catalog string arguments to 512 characters.
 - Reused the validated signing key with strong production configuration and a secure local fallback. Cookies remain signed, HttpOnly, SameSite=Strict and Secure on Vercel.
