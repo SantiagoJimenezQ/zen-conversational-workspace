@@ -1,0 +1,23 @@
+diff --git a/dist/commonjs/index.js b/dist/commonjs/index.js
+index ec1981d9a738ecf28d63190e27506ff0e600bf79..964596b6b49b3bc46ce1ee7bad2c56697205f61c 100644
+--- a/dist/commonjs/index.js
++++ b/dist/commonjs/index.js
+@@ -1509,4 +1509,6 @@ Object.defineProperty(exports, "unescape", { enumerable: true, get: function ()
+ exports.minimatch.Minimatch = Minimatch;
+ exports.minimatch.escape = escape_js_1.escape;
+ exports.minimatch.unescape = unescape_js_1.unescape;
++// Keep legacy lint plugins callable while retaining all modern named exports.
++module.exports = Object.assign(exports.minimatch, exports);
+ //# sourceMappingURL=index.js.map
+\ No newline at end of file
+diff --git a/dist/esm/index.js b/dist/esm/index.js
+index ab804c2db6951836630594a59844233756d3957c..3a8ca0e9e28b25444db6f49644422df5a8893ab2 100644
+--- a/dist/esm/index.js
++++ b/dist/esm/index.js
+@@ -1498,4 +1498,6 @@ export { unescape } from './unescape.js';
+ minimatch.Minimatch = Minimatch;
+ minimatch.escape = escape;
+ minimatch.unescape = unescape;
++// Legacy ESM consumers previously received the callable CommonJS default.
++export default minimatch;
+ //# sourceMappingURL=index.js.map
