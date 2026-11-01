@@ -122,7 +122,7 @@ async function main() {
     datasetVersion: DATASET_VERSION,
     sourceHash,
     at: new Date().toISOString(),
-    models: { chat: providerConfig().model, scope: scopeConfig().model },
+    models: { chat: providerConfig().model, scope: scopeConfig().model, scopeFallback: scopeConfig().fallbackModel || null },
     isolation:
       "All Zernio requests mocked; temporary action ledger; no confirmation calls; only the two fixed OpenRouter model endpoints can reach the network.",
     modelRequests: 150 - budget.remaining,

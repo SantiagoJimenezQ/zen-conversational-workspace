@@ -11,7 +11,8 @@
     "test": "node --conditions=react-server --import tsx --test tests/*.test.ts",
     "format": "prettier --write src tests next.config.ts",
     "eval:scope": "node --conditions=react-server --import tsx scripts/eval-agent-scope.ts",
-    "eval:agent": "node --conditions=react-server --import tsx scripts/eval-agent.ts"
+    "eval:agent": "node --conditions=react-server --import tsx scripts/eval-agent.ts",
+    "eval:preview": "node --conditions=react-server --import tsx scripts/eval-preview.ts"
   },
   "dependencies": {
     "@fontsource-variable/geist": "^5.3.0",

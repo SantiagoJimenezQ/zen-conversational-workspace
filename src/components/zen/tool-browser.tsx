@@ -295,8 +295,11 @@ export default function ToolBrowser({
             </div>
             <p className="text-sm">
               ${((activity?.committedCents || 0) / 100).toFixed(2)} committed /
-              $5.00 total. Provider-side changes appear when you refresh a real
-              read; this ledger records Zen approvals.
+              $5.00 total.{" "}
+              {mcpCopy(
+                "This temporary sample ledger records simulated approvals. No real charges occur.",
+                "Provider-side changes appear when you refresh a real read; this ledger records Zen approvals.",
+              )}
             </p>
             <ul className="mt-3 text-sm">
               {activity?.operations

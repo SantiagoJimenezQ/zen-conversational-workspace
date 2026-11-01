@@ -10,7 +10,14 @@ export const sourceIdSchema = z.enum([
 export type SourceId = z.infer<typeof sourceIdSchema>;
 export const setupInput = z
   .object({
-    country: z.string().trim().min(2).max(60),
+    country: z
+      .string()
+      .trim()
+      .min(2)
+      .max(60)
+      .describe(
+        "Two-letter ISO country code, such as PL for Poland or US for United States.",
+      ),
     capability: z.enum(["voice", "sms", "both"]),
   })
   .strict();

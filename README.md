@@ -23,7 +23,7 @@ The repository includes the original real MCP transport, local durable action le
 | Discover a capability | Use synthetic documentation responses and a dated reference to explain the sample workflow. Documentation links point to public reference material; the adapter does not retrieve those pages. |
 | Inspect an account | Read visitor-specific sample workspace profiles and an empty connected-account list. |
 | Understand calls | Calculate attempts for yesterday, the last 7 days or the last 30 days, filtered by inbound, outbound or all calls. The server handles pagination, deduplication and exact time boundaries. |
-| Set up a number | Show sample US phone offers and prepare a simulated purchase for review. No number is acquired or billed. |
+| Set up a number | Show sample US voice/SMS or Polish voice-only local-number offers and prepare a simulated purchase for review. No number is acquired or billed. |
 | Browse tools | Open the wrench tool browser or discover tools in chat. The mock catalog contains seven supported tools; other operations are unavailable. |
 | Review an action | Inspect exact arguments, sample cost, recurring terms and operation state. A chat “yes” cannot confirm a write. |
 | Change sample state | Create a profile or simulate a number purchase after explicit UI confirmation. Refresh reads to see state available in the same server instance. |
@@ -43,6 +43,12 @@ The table above describes the public mock mode. In local real mode, documentatio
 
 The surrounding dashboard navigation provides context. Zen is the implemented surface; the other dashboard sections are not full product implementations.
 
+Open **How it works** in the top notice for a compact diagram of OpenRouter, Jev scope decisions, DeepSeek, server checks, and Zen MCP reads and explicitly approved writes. It explains why the scope model is separate and labels mocked data in the public demo. The panel explains sample versus real local mode and does not send a model request or change the conversation.
+
+## Sharing
+
+The public demo defines its page, Open Graph and large-image Twitter card metadata in [src/app/layout.tsx](src/app/layout.tsx). The approved sharing artwork is [public/og/zen-og-v1.png](public/og/zen-og-v1.png); image URLs resolve against the public Vercel domain.
+
 ## Run locally
 
 Use Node.js 22 or newer and **pnpm 12.16.1**, pinned in [package.json](package.json). CI runs on Node.js 22.
@@ -61,6 +67,7 @@ ZERNIO_MCP_MOCK=true
 OPENROUTER_API_KEY=
 OPENROUTER_MODEL=deepseek/deepseek-v4.1-flash-1017
 OPENROUTER_SCOPE_MODEL=typesafe/jev-1.14
+OPENROUTER_SCOPE_FALLBACK_MODEL=openai/gpt-6-luna-decisions
 DEMO_SIGNING_SECRET=
 PUBLIC_APP_ORIGIN=
 ```
@@ -71,6 +78,7 @@ PUBLIC_APP_ORIGIN=
 | `OPENROUTER_API_KEY` | Server-side model authentication. On Vercel, the app verifies a positive remaining lifetime cap of at most $10, no reset and BYOK usage included before each live chat. Local development can use your own model key. |
 | `OPENROUTER_MODEL` | Conversational model; defaults to DeepSeek v4.1 Flash. |
 | `OPENROUTER_SCOPE_MODEL` | Separate scope classifier; defaults to Jev 1.14. |
+| `OPENROUTER_SCOPE_FALLBACK_MODEL` | Luna Decisions on transient Jev failure; blank disables. |
 | `DEMO_SIGNING_SECRET` | Signs simulation sessions, quotes and historical action receipts. Use a persistent random value of at least 32 characters in production. |
 | `PUBLIC_APP_ORIGIN` | Allowed production HTTPS origin. Vercel-provided deployment origins are also recognized. |
 
@@ -96,6 +104,7 @@ ZERNIO_API_KEY=
 OPENROUTER_API_KEY=
 OPENROUTER_MODEL=deepseek/deepseek-v4.1-flash-1017
 OPENROUTER_SCOPE_MODEL=typesafe/jev-1.14
+OPENROUTER_SCOPE_FALLBACK_MODEL=openai/gpt-6-luna-decisions
 DEMO_SIGNING_SECRET=
 ```
 
@@ -122,7 +131,7 @@ The API checks scope before the agent can use tools. Text and structured cards s
 ```mermaid
 flowchart LR
     UI[Chat UI] --> API[Next.js API]
-    API --> Scope[Jev scope check]
+    API --> Scope[Scope policy]
     Scope -->|Allowed| Agent[DeepSeek agent]
     Agent -->|Server-validated tools| Mock[Selected MCP adapter]
     Scope -->|Refuse or clarify| UI
@@ -130,9 +139,11 @@ flowchart LR
 
 [`/api/chat`](src/app/api/chat/route.ts) validates input, restores verified action context and streams NDJSON events. Text updates are batched, and settled or stopped conversations are saved locally. Restored unfinished streams are marked stopped rather than silently resumed.
 
-[`agent-policy.ts`](src/lib/zen/agent-policy.ts) makes a separate, tool-free scope request through OpenRouter’s Decisions API. It returns **in scope**, **out of scope**, or **clarify**. An allow decision below the initial 0.9 probability threshold becomes a clarification. Invalid responses, failures and timeouts stop the request. The threshold is a starting policy, not a calibrated guarantee.
+The default classifier is Jev 1.14 through OpenRouter’s Decisions API. A transient Jev failure (overload, rate limit, timeout or network failure) permits one attempt with `openai/gpt-6-luna-decisions`. Both responses use the same strict schema and initial 0.9 allow-probability threshold; lower-confidence allows become clarifications. A valid refusal or clarification never triggers fallback. Malformed replies and credential, billing or configuration failures stop the request. Each Decisions attempt has an eight-second deadline; caller cancellation stops both. If the fallback also fails, no agent or MCP tool runs.
 
-The classifier sees bounded recent user requests and verified-action context. Prior assistant claims and tool text cannot authorize a new request. The public policy is limited to the workspace’s supported product and integration workflows.
+`OPENROUTER_SCOPE_FALLBACK_MODEL` defaults to the pinned Luna model; set it to an empty value to disable failover. Only this reviewed fallback and a Jev primary are supported. The threshold is a conservative policy, not a calibrated accuracy guarantee for either model. Direct account-resource requests inside Zen, such as listing WhatsApp numbers or creating a profile, do not need to repeat “Zernio”.
+
+The classifier receives a trusted capability summary, six bounded prior user requests, and up to 1,200 characters of the latest assistant reply within the last seven prior messages to resolve references. Assistant text is untrusted context, not permission or proof of execution. Verified-action context remains a separate server boolean. The public policy is limited to the workspace’s supported product and integration workflows.
 
 [`openrouter.ts`](src/lib/zen/openrouter.ts) then runs DeepSeek with at most six rounds and eight tool calls per turn. Requests, output, tool results and execution time are bounded. The three model/metadata endpoints are fixed OpenRouter URLs and reject redirects. Stopping generation propagates cancellation.
 
@@ -154,6 +165,8 @@ sequenceDiagram
     API->>State: Record the operation state
     API-->>User: Update the review card
 ```
+
+Mock profile names must be nonblank and single-line, without control characters. Phone proposals verify requested SMS support before approval, in addition to the current price and stock. Explicitly requesting a proposal permits preparation and prerequisite reads; execution still requires the UI.
 
 The UI sends mock operations through the chat function so model proposals and confirmations can share a warm instance. [`/api/zernio`](src/app/api/zernio/route.ts) contains the operation handler for catalog reads, proposals, confirmation, status, cancellation and refresh. Its provider-shaped route name does not connect it to a real account.
 
@@ -267,6 +280,12 @@ These commands consume OpenRouter credits and do not run in normal CI. The agent
 Earlier scores must not be presented as a new baseline for this unified implementation. The current original dataset is `zen-agent-v1.3`; two targeted Spanish cases passed, while a full v1.3 baseline remains pending. Earlier runs exposed false scope clarifications and action requests that returned prose without the expected review card.
 
 Recording a full baseline for this unified implementation and comparing repeated runs is a next step. The public demo’s live-chat smoke check is evidence of one working interaction, not a model evaluation result.
+
+### Public chat regressions
+
+`pnpm run eval:preview` runs 14 live-model cases through the actual public mock adapter with fresh visitor sessions. It covers profile reads and proposals, recovery after a refusal, Polish voice setup and its country follow-up, US SMS, the Polish SMS limitation, Spanish requests, 7/30-day call totals and direction, unsupported WhatsApp-number listing, unrelated requests and approval bypasses. All account data is synthetic; only the fixed model endpoints can reach the network. This paid command is opt-in and does not run in ordinary tests or CI. Reports retain transcripts and source fingerprints in ignored `artifacts/evals/preview-*.json` files.
+
+The public catalog offers sample US local voice/SMS numbers and Polish local voice-only numbers. Prices are illustrative USD amounts, not real availability, pricing or KYC guidance. Number setup selects the sample default profile and still requires a separate UI review and explicit recurring consent. Unsupported resources get a specific demo limitation rather than an unrelated-task refusal.
 
 ### Verification snapshot
 

@@ -38,7 +38,14 @@ const mockTools = [
   schema(
     "profiles_create",
     {
-      name: { type: "string", maxLength: 512 },
+      name: {
+        type: "string",
+        minLength: 1,
+        maxLength: 512,
+        pattern: "^(?!\\s*$)[^\\u0000-\\u001f\\u007f]+$",
+        description:
+          "A nonblank, single-line profile name without control characters.",
+      },
       description: { type: "string", maxLength: 512 },
     },
     ["name"],
@@ -80,6 +87,23 @@ const result = (value: unknown, isError = false) => ({
   ],
   ...(isError ? { isError: true } : {}),
 });
+// Illustrative offers, not provider prices, availability or regulatory guidance.
+const phoneOffers = [
+  {
+    code: "US",
+    name: "United States",
+    monthlyCents: 300,
+    smsAvailable: true,
+    phoneNumber: "+12025550101",
+  },
+  {
+    code: "PL",
+    name: "Poland",
+    monthlyCents: 400,
+    smsAvailable: false,
+    phoneNumber: "+48225550101",
+  },
+];
 export function fixtureReply(
   entry: { fixture: string },
   name: string,
@@ -95,30 +119,36 @@ export function fixtureReply(
   if (name === "accounts_list") return result("No accounts connected.");
   if (name === "phone_numbers_list_phone_number_countries")
     return result({
-      countries: [
-        {
-          code: "US",
-          name: "United States",
-          types: [
-            {
-              numberType: "local",
-              monthlyCents: entry.fixture === "expensive" ? 1300 : 300,
-              inStock: entry.fixture !== "out-of-stock",
-              needsKyc: false,
-              callsAvailable: true,
-              smsAvailable: true,
-            },
-          ],
-        },
-      ],
+      countries: phoneOffers.map((offer) => ({
+        code: offer.code,
+        name: offer.name,
+        types: [
+          {
+            numberType: "local",
+            monthlyCents:
+              entry.fixture === "expensive" ? 1300 : offer.monthlyCents,
+            inStock: entry.fixture !== "out-of-stock",
+            needsKyc: false,
+            callsAvailable: true,
+            smsAvailable: offer.smsAvailable,
+          },
+        ],
+      })),
     });
-  if (name === "phone_numbers_search_available_phone_numbers")
+  if (name === "phone_numbers_search_available_phone_numbers") {
+    const offer = phoneOffers.find(
+      (offer) => offer.code === String(args.country || "US").toUpperCase(),
+    );
     return result({
       numbers:
-        entry.fixture === "out-of-stock"
+        entry.fixture === "out-of-stock" ||
+        !offer ||
+        (args.number_type && args.number_type !== "local") ||
+        (args.sms === true && !offer.smsAvailable)
           ? []
-          : [{ phoneNumber: "+12025550101" }],
+          : [{ phoneNumber: offer.phoneNumber }],
     });
+  }
   if (name === "calls_list_calls") {
     if (entry.fixture === "unavailable")
       return result(
@@ -251,7 +281,12 @@ export async function callMcp(
   if (tool === "profiles_list")
     return result(
       `Found ${state.profiles.length} profile(s):\n\n` +
-        state.profiles.map((p) => `- ${p.name} (ID: ${p.id})`).join("\n"),
+        state.profiles
+          .map(
+            (p) =>
+              `- ${p.name}${p.id === "sample-default" ? " (default)" : ""} (ID: ${p.id})`,
+          )
+          .join("\n"),
     );
   if (tool === "profiles_create") {
     if (state.profiles.length >= 50)
@@ -268,7 +303,25 @@ export async function callMcp(
     });
   }
   if (tool === "phone_numbers_purchase_phone_number") {
-    const number = String(params.phone_number || "+12025550101");
+    const offer = phoneOffers.find(
+      (offer) => offer.code === String(params.country || "US").toUpperCase(),
+    );
+    if (
+      !offer ||
+      params.number_type !== "local" ||
+      (params.wants_sms === true && !offer.smsAvailable) ||
+      (params.phone_number && params.phone_number !== offer.phoneNumber) ||
+      !state.profiles.some((profile) => profile.id === params.profile_id)
+    )
+      return result(
+        {
+          code: "INVALID_ARGUMENT",
+          message:
+            "Choose a sample profile and an available number matching the requested country and capability.",
+        },
+        true,
+      );
+    const number = offer.phoneNumber;
     state.numbers.push(number);
     return result({
       simulated: true,

@@ -74,6 +74,17 @@ export async function priceOperation(
     const chosen = types.find(
       (t) => object(t) && t.numberType === args.number_type,
     );
+    if (
+      object(chosen) &&
+      args.wants_sms === true &&
+      chosen.smsAvailable !== true
+    )
+      return {
+        cents: null,
+        recurring: 0,
+        reason:
+          "The selected number type does not support SMS. Choose a voice-only setup or a type with verified SMS support.",
+      };
     const cents = object(chosen) ? chosen.monthlyCents : undefined;
     if (typeof cents !== "number" || !Number.isSafeInteger(cents) || cents < 0)
       return {

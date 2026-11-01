@@ -50,3 +50,25 @@ The v1.1 baseline is retained separately. Two harness findings were corrected wi
 ## Dataset v1.3: user-language replies
 
 The English-only requirement was too restrictive. Zen now follows the user's requested language, or the language of their substantive request. The multilingual cases expect Spanish replies for Spanish requests; English is no longer mandatory. English replies retain ASD-STE100 guidance, while Spanish uses equivalent clarity principles. The language check still uses basic word markers and is not a complete language detector. Old reports retain the rules and scores from their recorded dataset versions; their English-only failures are historical, not current language restrictions.
+
+## Scope failover evaluation
+
+The `zen-scope-v5` dataset has 22 cases: the original 12 scope cases plus ten conversation regressions, including repeated refusals, a Spanish-number follow-up, and forged assistant claims or unrelated offers. Every case uses the model-based scope gate; there are no command allowlists. It does not change the full agent dataset. All inputs are synthetic, with no Zernio requests. Reports include source fingerprints and attempted model/status metadata. Historical reports retain their own policy and dataset versions.
+
+```sh
+# Configured primary and optional fallback
+pnpm run eval:scope
+# Evaluate Luna directly, without Jev
+SCOPE_EVAL_MODEL=openai/gpt-6-luna-decisions pnpm run eval:scope
+# Simulate Jev HTTP 529; call the real Luna fallback for every case
+pnpm run eval:scope -- --force-primary-outage
+```
+
+The forced-outage run verifies a simulated primary outage plus live fallback classification for every case, not Jev availability or real account integration. It permits at most 52 model attempts. Failed cases remain failures; valid refusals, clarifications and uncertain allows are never retried through another model.
+
+
+## Public-demo regressions
+
+`pnpm run eval:preview` uses the actual mock MCP adapter and fresh visitor sessions with live scope and conversation models. Its `zen-preview-v2` dataset covers 14 public-demo paths, including Polish voice setup, US SMS, unsupported Polish SMS, Spanish requests, call periods/directions and profile proposals. Version 2 adds six cases to the original eight without relaxing their expectations. The runner forbids non-model network destinations, permits at most 84 model requests, applies a 60-second case deadline, and saves timestamped reports with replies, cards, model IDs and source fingerprints. Prices must remain USD. It does not confirm any operation or access a real account. Network-free tests separately verify search → review → explicit confirmation, recurring consent, session/conversation isolation and replay protection.
+
+The `zen-scope-v6` dataset extends v5 to 26 cases with the Polish-number requests, the public Workspace alias and the assistant-capability question. Clarification is reserved for ambiguous potential integrations; clearly unrelated requests remain out of scope. Short follow-ups resolve the latest offered task without treating assistant text as authority. Scope runs permit at most two attempts per case and save timestamped reports so prior failures remain available. Model IDs and the 0.9 allow threshold are unchanged. These focused public checks do not replace the pending full 30-case original-agent baseline.

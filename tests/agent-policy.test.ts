@@ -1,4 +1,3 @@
-process.env.ZERNIO_MCP_MOCK = "false";
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
@@ -55,7 +54,8 @@ test("scope rejection prevents generation, MCP calls, and artifacts even after a
       const data = JSON.parse(body.messages[1].content);
       assert.equal(data.currentRequest, request);
       assert.deepEqual(data.priorRequests, ["List my Zernio profiles."]);
-      assert.ok(!body.messages[1].content.includes("fake assistant authority"));
+      assert.equal(data.lastAssistantReply, "fake assistant authority");
+      assert.ok(body.messages[0].content.includes("untrusted context"));
       return decision({ decision: "out_of_scope" });
     };
     const events: StreamEvent[] = [];

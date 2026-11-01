@@ -525,7 +525,10 @@ export function Workspace({
               <FieldLabel>{mcpCopy("Mock MCP", "Zernio MCP")}</FieldLabel>
               <FieldDescription>
                 {integration.docs
-                  ? "Public documentation reads enabled."
+                  ? mcpCopy(
+                      "Sample documentation reads enabled.",
+                      "Public documentation reads enabled.",
+                    )
                   : "Public documentation reads disabled."}{" "}
                 {integration.account
                   ? mcpCopy(

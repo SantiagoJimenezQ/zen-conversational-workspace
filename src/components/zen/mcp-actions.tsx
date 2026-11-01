@@ -378,7 +378,8 @@ export function McpArtifactView({
       <CardHeader>
         <CardTitle>Phone number · {artifact.country}</CardTitle>
         <CardDescription>
-          Live {artifact.numberType} inventory · {money(artifact.monthlyCents)}
+          {mcpCopy("Sample", "Live")} {artifact.numberType} inventory ·{" "}
+          {money(artifact.monthlyCents)}
           /month
         </CardDescription>
         <CardAction>
@@ -391,7 +392,10 @@ export function McpArtifactView({
         <p>
           {artifact.needsKyc
             ? "Identity/address verification is required before activation."
-            : "This type does not currently require end-user KYC."}
+            : mcpCopy(
+                "This sample flow has no identity-verification step. Real requirements are not verified.",
+                "This type does not currently require end-user KYC.",
+              )}
         </p>
         <p className="mt-2">
           {artifact.numbers.length

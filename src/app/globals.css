@@ -1387,6 +1387,248 @@ svg {
     padding: 16px 24px;
   }
 }
+.how-it-works-trigger {
+  height: auto;
+  min-height: 28px;
+  margin-inline-start: 12px;
+  padding: 0;
+  vertical-align: middle;
+}
+.how-it-works-panel[data-side="right"] {
+  width: min(100vw, 560px);
+  max-width: none;
+  gap: 0;
+}
+.how-it-works-heading {
+  gap: 8px;
+  padding: 24px 48px 20px 24px;
+}
+.how-it-works-body {
+  min-height: 0;
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 24px 8px;
+}
+.architecture-flow {
+  margin: 0;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--muted);
+}
+.architecture-flow figcaption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.architecture-request,
+.architecture-server {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 12px;
+}
+.architecture-request {
+  margin-top: 14px;
+}
+.architecture-request svg,
+.architecture-server svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: var(--muted-foreground);
+}
+.architecture-down {
+  display: block;
+  width: 14px;
+  height: 20px;
+  margin: 4px auto;
+  color: var(--muted-foreground);
+}
+.architecture-gateway {
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--card);
+}
+.architecture-gateway h3 {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+.architecture-gateway h3 span,
+.architecture-gateway p,
+.architecture-stages > li > span,
+.architecture-server > span {
+  color: var(--muted-foreground);
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.5;
+}
+.architecture-gateway p {
+  margin: 8px 0 0;
+}
+.architecture-server {
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--card);
+}
+.architecture-server > span {
+  flex-basis: 100%;
+  text-align: center;
+}
+.architecture-stages {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.architecture-stages > li {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 4px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--card);
+  text-align: center;
+  font-size: 11px;
+}
+.architecture-stages svg {
+  width: 18px;
+  height: 18px;
+  color: var(--muted-foreground);
+}
+.architecture-brand-icon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+.architecture-stages .architecture-across {
+  position: absolute;
+  top: 50%;
+  right: -18px;
+  width: 14px;
+  height: 14px;
+  transform: translateY(-50%);
+}
+.architecture-paths {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  margin-top: 16px;
+}
+.architecture-paths h3 {
+  margin: 0 0 8px;
+  color: var(--muted-foreground);
+  font-size: 11px;
+  font-weight: 600;
+}
+.architecture-paths ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.architecture-paths li {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.architecture-paths li > div {
+  width: 100%;
+  padding: 8px 4px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--card);
+  text-align: center;
+  font-size: 12px;
+}
+.architecture-paths li > svg {
+  width: 12px;
+  height: 16px;
+  color: var(--muted-foreground);
+}
+.architecture-paths li > .architecture-approval {
+  border-color: var(--brand);
+  font-weight: 600;
+}
+.architecture-paths p {
+  margin: 8px 0 0;
+  color: var(--muted-foreground);
+  font-size: 11px;
+  line-height: 1.5;
+}
+.architecture-notes {
+  display: grid;
+  gap: 14px;
+  margin: 20px 0;
+  font-size: 13px;
+}
+.architecture-why {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 20px;
+}
+.architecture-why h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+.architecture-why p {
+  margin: 0;
+  color: var(--muted-foreground);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.architecture-why a {
+  width: fit-content;
+  font-size: 12px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.architecture-notes dt {
+  font-weight: 600;
+}
+.architecture-notes dd {
+  margin: 4px 0 0;
+  color: var(--muted-foreground);
+  line-height: 1.5;
+}
+.architecture-mode {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.architecture-mode p,
+.architecture-footnote {
+  margin: 0;
+  color: var(--muted-foreground);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.architecture-footnote {
+  margin-top: 14px;
+}
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
